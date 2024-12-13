@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class SecurityException {
+public class SecurityException extends Throwable {
 
     private int statusCode;
     private String msg;

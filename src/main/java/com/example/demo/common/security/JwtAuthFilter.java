@@ -31,9 +31,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String token = jwtUtil.resolveAccessToken(request);
 
         if (token != null) {
-            if (!jwtUtil.validateToken(token)) {
-                jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
-                return;
+            try {
+                if (!jwtUtil.validateToken(token)) {
+                    jwtExceptionHandler(response, "Token Error", HttpStatus.UNAUTHORIZED.value());
+                    return;
+                }
+            } catch (com.example.demo.common.jwtUtil.SecurityException e) {
+                throw new RuntimeException(e);
             }
             Claims info = jwtUtil.getUserInfoFromToken(token);
             setAuthentication(info.getSubject());

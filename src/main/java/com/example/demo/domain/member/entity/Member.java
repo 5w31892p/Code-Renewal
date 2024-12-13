@@ -24,12 +24,16 @@ public class Member {
 
     private String password;
 
+    @Enumerated(EnumType.STRING)
+    private MemberPermission permission;
+
     @Builder
-    public Member(String memberKey,String memberName,  String memberId, String email, String password) {
+    public Member(String memberKey,String memberName,  String memberId, String email, String password, MemberPermission permission) {
         this.memberKey = memberKey;
         this.memberName = memberName;
         this.memberId = memberId;
         this.email = email;
         this.password = password;
+        this.permission = permission;
     }
 }
