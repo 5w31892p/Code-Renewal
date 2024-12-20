@@ -2,7 +2,6 @@ package com.example.demo.common.config;
 
 import com.example.demo.common.jwtUtil.JwtUtil;
 import com.example.demo.common.security.JwtAuthFilter;
-import com.example.demo.common.security.UserDetailsImpl;
 import com.example.demo.common.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
@@ -16,7 +15,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -109,7 +107,7 @@ public class SecurityConfig {
     public WebSecurityCustomizer webSecurityCustomizer() {
         return (web) -> web.ignoring()
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/h2-console/**", "/favicon.ico");
+                .requestMatchers("/v3/api-docs", "/h2-console/**", "/favicon.ico");
     }
 
     @Bean
