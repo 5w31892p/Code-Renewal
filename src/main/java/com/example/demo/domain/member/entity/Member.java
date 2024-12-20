@@ -1,17 +1,19 @@
 package com.example.demo.domain.member.entity;
 
 
+import com.example.demo.common.config.TimeStamped;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Member {
+public class Member extends TimeStamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long memberSeq;
 
+    @Column(unique = true, nullable = false)
     private String memberKey;
 
     private String memberName;
