@@ -15,12 +15,12 @@ import java.util.Date;
 public class Timestamped {
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "yyyyMMddHHmmss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date createdDate ;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    @DateTimeFormat(pattern = "yyyyMMddHHmmss")
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Date modifiedDate;
 
 /*
