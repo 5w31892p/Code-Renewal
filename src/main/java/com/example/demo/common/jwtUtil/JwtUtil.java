@@ -1,7 +1,7 @@
 package com.example.demo.common.jwtUtil;
 
 
-import com.example.demo.common.MemberPermission;
+import com.example.demo.domain.member.entity.MemberPermission;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
@@ -59,29 +59,21 @@ public class JwtUtil {
 
     // 토큰 생성
     public String createAccessToken(String email, MemberPermission permission) {
-        Date date = new Date();
-
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(email)
-                        .claim(AUTHORIZATION_KEY, permission)
-                        .setExpiration(new Date(date.getTime() + ACCESS_TOKEN_TIME))
-                        .setIssuedAt(date)
-                        .signWith(key, signatureAlgorithm)
-                        .compact();
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(email)
+                .claim(AUTHORIZATION_KEY, permission.name())
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_TIME))
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 
-    public String createRefreshToken(String email,MemberPermission permission) {
-        Date date = new Date();
-
-        return BEARER_PREFIX +
-                Jwts.builder()
-                        .setSubject(email)
-                        .claim(AUTHORIZATION_KEY, permission)
-                        .setExpiration(new Date(date.getTime() + REFRESH_TOKEN_TIME))
-                        .setIssuedAt(date)
-                        .signWith(key, signatureAlgorithm)
-                        .compact();
+    public String createRefreshToken(String email, MemberPermission permission) {
+        return BEARER_PREFIX + Jwts.builder()
+                .setSubject(email)
+                .claim(AUTHORIZATION_KEY, permission)
+                .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME))
+                .signWith(key, signatureAlgorithm)
+                .compact();
     }
 
     // 토큰 검증
@@ -90,9 +82,11 @@ public class JwtUtil {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT token, 만료된 JWT token 입니다.");
+            log.info("Expired JWT token, 만료된 JWT 토큰 : {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.");
+            log.info("Unsupported JWT token, 지원되지 않는 JWT 토큰 : {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.info("Malformed JWT token, 잘못된 JWT 토큰 : {}", e.getMessage());
         } catch (IllegalArgumentException e) {
             log.info("JWT claims is empty, 잘못된 JWT 토큰 입니다.");
         }
@@ -104,12 +98,11 @@ public class JwtUtil {
         return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
     }
 
-    public JwtInfoResponse jwtInfoResponse(HttpServletRequest request){
+    public JwtInfoResponse jwtInfoResponse(HttpServletRequest request) {
         String accessToken = resolveAccessToken(request);
         Claims userInfoFromToken = getUserInfoFromToken(accessToken);
         String refreshToken = resolveRefreshToken(request);
         String email = userInfoFromToken.getSubject();
-
         return JwtInfoResponse.builder().email(email).refreshToken(refreshToken).build();
     }
 }

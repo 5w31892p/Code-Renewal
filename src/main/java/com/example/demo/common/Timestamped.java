@@ -1,4 +1,4 @@
-package com.example.demo.common.config;
+package com.example.demo.common;
 
 import jakarta.persistence.*;
 import lombok.Getter;
