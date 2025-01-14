@@ -1,3 +1,9 @@
+buildscript {
+    ext {
+        queryDslVersion = "5.0.0"
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
@@ -23,6 +29,9 @@ repositories {
     mavenCentral()
 }
 
+
+def querydslVersion = '5.0.0'
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -35,7 +44,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-    testImplementation "org.junit.jupiter:junit-jupiter:5.5.2"
+    testImplementation "org.junit.jupiter:junit-jupiter:5.10.0"
+
     testImplementation "org.mockito:mockito-core:3.12.4"
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
@@ -50,6 +60,16 @@ dependencies {
 
     //jasypt
     implementation 'com.github.ulisesbocchio:jasypt-spring-boot-starter:3.0.5'
+
+    //QueryDSL
+    implementation "com.querydsl:querydsl-jpa:${querydslVersion}:jakarta"
+    annotationProcessor "com.querydsl:querydsl-apt:${querydslVersion}:jakarta"
+    annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+    annotationProcessor "jakarta.persistence:jakarta.persistence-api"
+
+    // MySQL
+    implementation 'mysql:mysql-connector-java:8.0.33'
+
 }
 
 tasks.named('test') {

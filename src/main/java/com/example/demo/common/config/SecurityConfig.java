@@ -4,7 +4,6 @@ import com.example.demo.common.jwtUtil.JwtUtil;
 import com.example.demo.common.security.JwtAuthFilter;
 import com.example.demo.common.security.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,15 +11,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
@@ -29,10 +25,8 @@ public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtUtil jwtUtil;
-    private final String[] permitAllArray = {
-            "/h2-console/**", "/api/**", "/favicon.ico",
-            "/members/**",
-            "/boards/**"
+    private static final String[] PERMIT_ALL_ARRAY = {
+            "/members/**"
     };
 
 
@@ -60,7 +54,8 @@ public class SecurityConfig {
         */
         http.headers(headers -> headers
                         .contentSecurityPolicy(csp -> csp
-/*                        .policyDirectives(
+                        /*
+                        .policyDirectives(
                                 "default-src 'self'; " +
                                 "script-src 'self' 'nonce-randomString'; " +
                                 "object-src 'none'; " +
@@ -74,40 +69,33 @@ public class SecurityConfig {
                                 "upgrade-insecure-requests; " +
                                 "block-all-mixed-content; "
                                //  "report-uri /csp-violation-report-endpoint;"
-                        )*/
-                                .policyDirectives("script-src 'self'")
                         )
+                        */
 
+                                .policyDirectives(
+                                        "script-src 'self'" +
+                                        "'unsafe-inline'" +
+                                        "frame-ancestors 'self'")
+                        )
+                // .frameOptions(FrameOptionsConfig::sameOrigin) // H2 콘솔 허용
+                // .frameOptions(frameOptions -> frameOptions.sameOrigin()) // H2 콘솔 허용
         );
 
 
-        /*
-        세션 관리 정책 상태 비저장(Stateless)으로 설정
-        */
-        http.sessionManagement(sessionManagement -> sessionManagement
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+        // 세션 비활성화 (Stateless)
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
-        );
-
-        http.authorizeHttpRequests(authorizeRequests -> authorizeRequests
+        // 엔드포인트별 접근 제어
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(PERMIT_ALL_ARRAY).permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers(permitAllArray).permitAll()
-
                 .anyRequest().authenticated()
         );
 
+        // JWT 인증 필터 추가
         http.addFilterBefore(new JwtAuthFilter(jwtUtil, userDetailsService), UsernamePasswordAuthenticationFilter.class);
 
-        http.cors(withDefaults());
-
         return http.build();
-    }
-
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                .requestMatchers("/v3/api-docs", "/h2-console/**", "/favicon.ico");
     }
 
     @Bean
