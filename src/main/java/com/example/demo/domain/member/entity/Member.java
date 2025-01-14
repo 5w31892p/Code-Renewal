@@ -1,11 +1,11 @@
 package com.example.demo.domain.member.entity;
 
 
-import com.example.demo.common.config.Timestamped;
+import com.example.demo.common.Timestamped;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
+@Entity(name = "tb_member")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Member extends Timestamped {
