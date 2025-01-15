@@ -1,7 +1,9 @@
 package com.example.demo.common.security;
 
+import com.example.demo.common.ApiResponse;
 import com.example.demo.common.jwtUtil.JwtUtil;
 import com.example.demo.common.jwtUtil.SecurityException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -10,6 +12,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -62,10 +65,19 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     public void jwtExceptionHandler(HttpServletResponse response, String msg, int statusCode) throws IOException {
-        // 토큰 오류시 클라이언트에게 Exception 처리 값을 알려주는 함수이다.
+        ApiResponse<Void> apiResponse = ApiResponse.error(
+                HttpStatus.valueOf(statusCode),
+                "JWT validation failed",
+                msg
+        );
+
+        // ObjectMapper로 ApiResponse를 JSON으로 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        String jsonResponse = objectMapper.writeValueAsString(apiResponse);
+
         response.setStatus(statusCode);
         response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + msg + "\"}");
+        response.getWriter().write(jsonResponse);
     }
 }
 

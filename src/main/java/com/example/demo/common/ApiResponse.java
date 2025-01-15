@@ -1,6 +1,7 @@
 package com.example.demo.common;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 public class ApiResponse<T> {
     private int status;        // HTTP 상태 코드
@@ -21,10 +22,10 @@ public class ApiResponse<T> {
     }
 
     // 에러 응답
-    public static ApiResponse<Void> error(HttpStatus status, String message, String error) {
+    public static <T> ApiResponse<T> error(HttpStatusCode status, String message, String error) {
+
         return new ApiResponse<>(status.value(), message, null, error);
     }
-
     // Getters
     public int getStatus() {
         return status;
