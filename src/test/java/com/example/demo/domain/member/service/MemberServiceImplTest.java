@@ -1,6 +1,8 @@
 package com.example.demo.domain.member.service;
 
 import com.example.demo.common.jwtUtil.JwtUtil;
+import com.example.demo.domain.member.dto.DuplicateConfirmRequest;
+import com.example.demo.domain.member.dto.DuplicateConfirmResponse;
 import com.example.demo.domain.member.dto.SigninRequest;
 import com.example.demo.domain.member.dto.SignupRequest;
 import com.example.demo.domain.member.entity.Member;
@@ -18,7 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -148,5 +150,31 @@ class MemberServiceImplTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         // When & Then: 예외 검증
         assertThrows(ResponseStatusException.class, () -> memberService.signin(signinRequest, response));
+    }
+
+    @DisplayName("중복확인 성공")
+    @Test
+    void duplicateConfirm() {
+
+        //given
+        DuplicateConfirmRequest requestId = DuplicateConfirmRequest.builder()
+                .type("memberId")
+                .value("newPeople").build();
+
+        DuplicateConfirmRequest requestEmail = DuplicateConfirmRequest.builder()
+                .type("email")
+                .value("haha55@naver.com").build();
+
+        when(memberRepository.existsByMemberId("newPeople")).thenReturn(true);
+        when(memberRepository.existsByEmail("haha55@naver.com")).thenReturn(true);
+        // When
+        DuplicateConfirmResponse responseId = memberService.duplicateConfirm(requestId);
+        DuplicateConfirmResponse responseEmail = memberService.duplicateConfirm(requestEmail);
+
+        // Then
+        assertNotNull(responseId);
+        assertTrue(responseId.isDuplicate());
+        assertNotNull(responseEmail);
+        assertTrue(responseEmail.isDuplicate());
     }
 }
