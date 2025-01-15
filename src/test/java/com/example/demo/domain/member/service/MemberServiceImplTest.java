@@ -1,10 +1,7 @@
 package com.example.demo.domain.member.service;
 
 import com.example.demo.common.jwtUtil.JwtUtil;
-import com.example.demo.domain.member.dto.DuplicateConfirmRequest;
-import com.example.demo.domain.member.dto.DuplicateConfirmResponse;
-import com.example.demo.domain.member.dto.SigninRequest;
-import com.example.demo.domain.member.dto.SignupRequest;
+import com.example.demo.domain.member.dto.*;
 import com.example.demo.domain.member.entity.Member;
 import com.example.demo.domain.member.entity.MemberPermission;
 import com.example.demo.domain.member.repository.MemberRepository;
@@ -18,6 +15,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -176,5 +176,47 @@ class MemberServiceImplTest {
         assertTrue(responseId.isDuplicate());
         assertNotNull(responseEmail);
         assertTrue(responseEmail.isDuplicate());
+    }
+
+    @DisplayName("내 정보 조회 성공")
+    @Test
+    void getMyInfo() {
+        //given
+        String email = "john.doe@example.com";
+        Member member = Member.builder()
+                .memberId("john123")
+                .email(email)
+                .password("encodedPassword")
+                .permission(MemberPermission.MEMBER)
+                .build();
+
+        InfoResponse myInfo = InfoResponse.builder()
+                .memberId(member.getMemberId())
+                .email(member.getEmail())
+                .build();
+
+        when(memberRepository.findByInfoEmail(email)).thenReturn(Optional.of(myInfo));
+
+        //when
+        InfoResponse response = memberService.getMyInfo(email);
+
+        //then
+        assertNotNull(response);
+        assertThat(response.getMemberId()).isEqualTo("john123");
+        assertThat(response.getEmail()).isEqualTo(email);
+
+        verify(memberRepository, times(1)).findByInfoEmail(email);
+    }
+
+    @DisplayName("내 정보 조회 실패 - 회원 정보 없음")
+    @Test
+    void getMyInfo_MemberNotFound() {
+        // given
+        String email = "unknown@example.com";
+        when(memberRepository.findByInfoEmail(email)).thenReturn(Optional.empty());
+
+        // When & Then=
+        assertThrows(NoSuchElementException.class, () -> memberService.getMyInfo(email));
+        verify(memberRepository, times(1)).findByInfoEmail(email);
     }
 }
