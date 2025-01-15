@@ -1,7 +1,6 @@
 package com.example.demo.domain.member.service;
 
 import com.example.demo.common.jwtUtil.JwtUtil;
-import com.example.demo.domain.member.dto.MyPageResponse;
 import com.example.demo.domain.member.dto.SigninRequest;
 import com.example.demo.domain.member.dto.SignupRequest;
 import com.example.demo.domain.member.entity.Member;
@@ -39,7 +38,7 @@ public class MemberServiceImpl implements MemberService {
                 .permission(MemberPermission.MEMBER)
                 .build();
 
-    memberRepository.save(member);
+        memberRepository.save(member);
     }
 
     @Override
@@ -53,6 +52,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
+    @Transactional
     public void signin(SigninRequest request, HttpServletResponse response) {
         String memberId = request.getMemberId();
         String password = request.getPassword();
@@ -83,7 +83,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     @Override
-    public void getMyInfo(MyPageResponse response) {
+    public void getMyInfo() {
 
     }
 

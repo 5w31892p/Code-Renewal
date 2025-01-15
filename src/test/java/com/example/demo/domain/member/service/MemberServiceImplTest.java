@@ -1,5 +1,7 @@
 package com.example.demo.domain.member.service;
 
+import com.example.demo.common.jwtUtil.JwtUtil;
+import com.example.demo.domain.member.dto.SigninRequest;
 import com.example.demo.domain.member.dto.SignupRequest;
 import com.example.demo.domain.member.entity.Member;
 import com.example.demo.domain.member.entity.MemberPermission;
@@ -11,9 +13,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,10 +30,13 @@ class MemberServiceImplTest {
     @Mock
     private PasswordEncoder passwordEncoder;
 
+    @Mock
+    private JwtUtil jwtUtil;
+
     @InjectMocks
     private MemberServiceImpl memberService;
 
-    @DisplayName("회원가입 성공")
+    @DisplayName("회원가입")
     @Test
     void testSignup() {
         // Given: 준비 단계
@@ -59,5 +67,86 @@ class MemberServiceImplTest {
         assertThat(savedMember.getPassword()).isEqualTo(encodedPassword); // 암호화된 패스워드 검증
         assertThat(savedMember.getPermission()).isEqualTo(MemberPermission.MEMBER);
         assertThat(savedMember.getMemberKey()).isNotBlank(); // UUID 생성 여부 검증
+    }
+
+    @DisplayName("로그인 - 토큰 발급")
+    @Test
+    void signin() {
+        // Given: 준비 단계
+        SigninRequest signinRequest = SigninRequest.builder()
+                .memberId("john123")
+                .password("securePassword")
+                .build();
+
+        String encodedPassword = "encodedPassword123";
+        Member member = Member.builder()
+                .memberId("john123")
+                .email("john.doe@example.com")
+                .password(encodedPassword)
+                .permission(MemberPermission.MEMBER)
+                .build();
+
+        when(memberRepository.findByMemberId("john123")).thenReturn(member);
+        when(passwordEncoder.matches("securePassword", encodedPassword)).thenReturn(true);
+        when(jwtUtil.createAccessToken(member.getEmail(), member.getPermission()))
+                .thenReturn("엑세스토큰이다!!");
+        when(jwtUtil.createRefreshToken(member.getEmail(), member.getPermission()))
+                .thenReturn("리프레쉬토큰이다!!");
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // When: 동작 실행
+        memberService.signin(signinRequest, response);
+
+        // Then: 결과 확인
+        assertThat(response.getHeader(JwtUtil.AUTHORIZATION_HEADER)).isEqualTo("엑세스토큰이다!!");
+        assertThat(response.getHeader(JwtUtil.REFRESH_HEADER)).isEqualTo("리프레쉬토큰이다!!");
+
+        verify(memberRepository, times(1)).findByMemberId("john123");
+        verify(passwordEncoder, times(1)).matches("securePassword", encodedPassword);
+        verify(jwtUtil, times(1)).createAccessToken(member.getEmail(), member.getPermission());
+        verify(jwtUtil, times(1)).createRefreshToken(member.getEmail(), member.getPermission());
+    }
+
+    @DisplayName("로그인 실패 - 잘못된 비밀번호")
+    @Test
+    void signinInvalidPassword() {
+        // Given: 준비 단계
+        SigninRequest signinRequest = SigninRequest.builder()
+                .memberId("john123")
+                .password("wrongPassword")
+                .build();
+
+        String encodedPassword = "encodedPassword123";
+        Member member = Member.builder()
+                .memberId("john123")
+                .email("john.doe@example.com")
+                .password(encodedPassword)
+                .permission(MemberPermission.MEMBER)
+                .build();
+
+        when(memberRepository.findByMemberId("john123")).thenReturn(member);
+        when(passwordEncoder.matches("wrongPassword", encodedPassword)).thenReturn(false);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        // When & Then: 예외 검증
+        assertThrows(ResponseStatusException.class, () -> memberService.signin(signinRequest, response));
+    }
+
+    @DisplayName("로그인 실패 - 회원 정보 없음")
+    @Test
+    void signinMemberNotFound() {
+        // Given: 준비 단계
+        SigninRequest signinRequest = SigninRequest.builder()
+                .memberId("unknownUser")
+                .password("securePassword")
+                .build();
+
+        when(memberRepository.findByMemberId("unknownUser")).thenReturn(null);
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        // When & Then: 예외 검증
+        assertThrows(ResponseStatusException.class, () -> memberService.signin(signinRequest, response));
     }
 }
