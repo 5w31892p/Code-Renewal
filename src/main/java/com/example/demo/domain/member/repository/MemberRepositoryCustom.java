@@ -4,7 +4,7 @@ import com.example.demo.domain.member.dto.InfoResponse;
 
 import java.util.Optional;
 
-public interface MemberRepositoryQuery {
+public interface MemberRepositoryCustom {
 
     boolean existsByMemberId(String memberId);
 

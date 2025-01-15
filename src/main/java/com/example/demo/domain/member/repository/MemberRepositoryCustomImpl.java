@@ -10,7 +10,7 @@ import java.util.Optional;
 import static com.example.demo.domain.member.entity.QMember.member;
 
 @RequiredArgsConstructor
-public class MemberRepositoryQueryImpl implements MemberRepositoryQuery {
+public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
 
     private final JPAQueryFactory jpaQueryFactory;
 
