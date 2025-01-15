@@ -1,13 +1,12 @@
 package com.example.demo.common.security;
 
 import com.example.demo.domain.member.entity.Member;
-import com.example.demo.domain.member.entity.MemberPermission;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.stream.Stream;
 
 public class UserDetailsImpl implements UserDetails {
     private final Member member;
@@ -22,15 +21,11 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        MemberPermission role = member.getPermission();
-        String authority = role.getAuthority();
-
-        SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(simpleGrantedAuthority);
-
-        return authorities;
+        return Stream.of(member.getPermission())
+                .map(permission -> new SimpleGrantedAuthority(permission.name()))
+                .toList();
     }
+
 
     @Override
     public String getPassword() {
