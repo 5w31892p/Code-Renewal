@@ -2,18 +2,15 @@ package com.example.demo.domain.member.controller;
 
 
 import com.example.demo.common.ApiResponse;
-import com.example.demo.domain.member.dto.SigninRequest;
-import com.example.demo.domain.member.dto.SignupRequest;
+import com.example.demo.common.security.UserDetailsImpl;
+import com.example.demo.domain.member.dto.*;
 import com.example.demo.domain.member.service.MemberService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
@@ -35,17 +32,30 @@ public class MemberController {
         try {
             memberService.signup(request);
             return ResponseEntity.ok(ApiResponse.success(null));
-        } catch (ResponseStatusException ex) {
+        } catch (ResponseStatusException e) {
             return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(ApiResponse.error((HttpStatus) ex.getStatusCode(), "Signup failed", ex.getReason()));
+                    .status(e.getStatusCode())
+                    .body(ApiResponse.error(e.getStatusCode(), "Signup failed", e.getReason()));
         }
     }
 
-//    @PostMapping("/name/validation")
-//    public ResponseEntity<ApiResponse<Void>> duplicateConfirmName(@Validated @RequestBody SigninRequest request) {}
-//    @PostMapping("/password/validation")
-//    public ResponseEntity<ApiResponse<Void>> duplicateConfirmName(@Validated @RequestBody SigninRequest request) {}
+    /**
+     *
+     * @param request email, id 중복 확인 정보
+     * @return 성공 시 200 OK 응답과 반환 데이터를 포함한 ApiResponse 반환
+     */
+    @PostMapping("/validation")
+    public ResponseEntity<ApiResponse<DuplicateConfirmResponse>> duplicateConfirm(@RequestBody DuplicateConfirmRequest request) {
+        try {
+            DuplicateConfirmResponse response = memberService.duplicateConfirm(request);
+            return ResponseEntity.ok(ApiResponse.success(response)); // 성공 응답에 데이터 포함
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(ApiResponse.error(e.getStatusCode(), "Duplicate check failed", e.getReason()
+                    ));
+        }
+    }
 
     /**
      * 로그인
@@ -58,18 +68,34 @@ public class MemberController {
      * 응답 코드:
      * - 200: 로그인 성공
      * - 401: 잘못된 자격 증명 (Invalid credentials)
-     * - 400: 잘못된 요청 형식
      */
     @PostMapping("/signin")
     public ResponseEntity<ApiResponse<Void>> signin(@Validated @RequestBody SigninRequest request, HttpServletResponse response) {
         try {
             memberService.signin(request, response);
             return ResponseEntity.ok(ApiResponse.success(null));
-        } catch (ResponseStatusException ex) {
+        } catch (ResponseStatusException e) {
             return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(ApiResponse.error((HttpStatus) ex.getStatusCode(), "Signin failed", ex.getReason()));
+                    .status(e.getStatusCode())
+                    .body(ApiResponse.error(e.getStatusCode(), "Signin failed", e.getReason()));
         }
+    }
 
+
+    /**
+     *
+     * @param userDetails  인증/인가 - 토큰
+     * @return 성공 시 200 OK 응답과 반환 데이터를 포함한 ApiResponse 반환
+     */
+    @GetMapping("/my-pages")
+    public ResponseEntity<ApiResponse<InfoResponse>> getMyPages(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+        try {
+            InfoResponse response = memberService.getMyInfo(userDetails.getUsername());
+            return ResponseEntity.ok(ApiResponse.success(response));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity
+                    .status(e.getStatusCode())
+                    .body(ApiResponse.error(e.getStatusCode(), "View my page failed", e.getReason()));
+        }
     }
 }
