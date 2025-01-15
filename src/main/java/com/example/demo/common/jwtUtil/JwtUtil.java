@@ -26,9 +26,8 @@ public class JwtUtil {
     public static final String AUTHORIZATION_KEY = "auth";
     public static final String REFRESH_KEY = "refresh";
     private static final String BEARER_PREFIX = "Bearer ";
-    private static final long ACCESS_TOKEN_TIME = 5 * 24 * 60 * 60 * 1000L;
-    private static final long REFRESH_TOKEN_TIME = 10 * 24 * 60 * 60 * 1000L;
-
+    private static final long ACCESS_TOKEN_TIME = 60 * 60 * 1000L; // 60분 -> 1시간
+    private static final long REFRESH_TOKEN_TIME = 60 * 60 * 60 * 1000L; // 60시간 -> 2.5일
     @Value("${jwt.secret.key}")
     private String secretKey;
     private Key key;
@@ -70,7 +69,7 @@ public class JwtUtil {
     public String createRefreshToken(String email, MemberPermission permission) {
         return BEARER_PREFIX + Jwts.builder()
                 .setSubject(email)
-                .claim(AUTHORIZATION_KEY, permission)
+                .claim(REFRESH_KEY, permission)
                 .setExpiration(new Date(System.currentTimeMillis() + REFRESH_TOKEN_TIME))
                 .signWith(key, signatureAlgorithm)
                 .compact();
