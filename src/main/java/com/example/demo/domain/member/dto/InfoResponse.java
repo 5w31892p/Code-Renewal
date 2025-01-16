@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class InfoResponse {
     private String memberId;
+    private String memberName;
     private String email;
 }

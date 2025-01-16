@@ -87,10 +87,10 @@ public class MemberController {
      * @param userDetails  인증/인가 - 토큰
      * @return 성공 시 200 OK 응답과 반환 데이터를 포함한 ApiResponse 반환
      */
-    @GetMapping("/my-pages")
-    public ResponseEntity<ApiResponse<InfoResponse>> getMyPages(@AuthenticationPrincipal UserDetailsImpl userDetails) {
+    @GetMapping("/{memberSeq}/pages")
+    public ResponseEntity<ApiResponse<InfoResponse>> getMyPages(@PathVariable Long memberSeq, @AuthenticationPrincipal UserDetailsImpl userDetails) {
         try {
-            InfoResponse response = memberService.getMyInfo(userDetails.getUsername());
+            InfoResponse response = memberService.getMyInfo(memberSeq, userDetails.getUsername());
             return ResponseEntity.ok(ApiResponse.success(response));
         } catch (ResponseStatusException e) {
             return ResponseEntity

@@ -26,13 +26,14 @@ public class MemberRepositoryCustomImpl implements MemberRepositoryCustom {
     }
 
     @Override
-    public Optional<InfoResponse> findByInfoEmail(String email) {
+    public Optional<InfoResponse> findByInfoEmailAndSeq(String email, Long seq) {
 
         return Optional.ofNullable(jpaQueryFactory.select(Projections.constructor(InfoResponse.class,
                         member.memberId,
+                        member.memberName,
                         member.email))
                 .from(member)
-                .where(member.email.eq(email))
+                .where(member.email.eq(email), member.memberSeq.eq(seq))
                 .setHint("org.hibernate.readOnly", true)
                 .fetchOne());
     }

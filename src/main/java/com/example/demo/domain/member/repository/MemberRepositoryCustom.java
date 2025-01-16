@@ -8,5 +8,5 @@ public interface MemberRepositoryCustom {
 
     boolean existsByMemberId(String memberId);
 
-    Optional<InfoResponse> findByInfoEmail(String email);
+    Optional<InfoResponse> findByInfoEmailAndSeq(String email, Long seq);
 }

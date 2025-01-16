@@ -9,7 +9,7 @@ public interface MemberService {
     DuplicateConfirmResponse duplicateConfirm(DuplicateConfirmRequest request);
     void signin(SigninRequest request, HttpServletResponse response);
     void signout(HttpServletResponse response);
-    InfoResponse getMyInfo(String email);
+    InfoResponse getMyInfo(Long memberSeq, String email);
     void findId();
     void findPassword();
     void updatePassword();

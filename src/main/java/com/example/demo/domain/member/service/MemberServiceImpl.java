@@ -89,11 +89,14 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     @Transactional(readOnly = true)
-    public InfoResponse getMyInfo(String email) {
-        Optional<InfoResponse> memberInfo = memberRepository.findByInfoEmail(email);
+    public InfoResponse getMyInfo(Long memberSeq, String email) {
+        Optional<InfoResponse> memberInfo = memberRepository.findByInfoEmailAndSeq(email, memberSeq);
+
+
 
         return InfoResponse.builder()
                 .memberId(memberInfo.get().getMemberId())
+                .memberName(memberInfo.get().getMemberName())
                 .email(memberInfo.get().getEmail())
                 .build();
     }
