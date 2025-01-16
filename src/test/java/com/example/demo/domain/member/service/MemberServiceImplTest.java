@@ -195,17 +195,17 @@ class MemberServiceImplTest {
                 .email(member.getEmail())
                 .build();
 
-        when(memberRepository.findByInfoEmail(email)).thenReturn(Optional.of(myInfo));
+        when(memberRepository.findByInfoEmailAndSeq(email, 1L)).thenReturn(Optional.of(myInfo));
 
         //when
-        InfoResponse response = memberService.getMyInfo(email);
+        InfoResponse response = memberService.getMyInfo(1L, email);
 
         //then
         assertNotNull(response);
         assertThat(response.getMemberId()).isEqualTo("john123");
         assertThat(response.getEmail()).isEqualTo(email);
 
-        verify(memberRepository, times(1)).findByInfoEmail(email);
+        verify(memberRepository, times(1)).findByInfoEmailAndSeq(email, 1L);
     }
 
     @DisplayName("내 정보 조회 실패 - 회원 정보 없음")
@@ -213,10 +213,10 @@ class MemberServiceImplTest {
     void getMyInfo_MemberNotFound() {
         // given
         String email = "unknown@example.com";
-        when(memberRepository.findByInfoEmail(email)).thenReturn(Optional.empty());
+        when(memberRepository.findByInfoEmailAndSeq(email, 1L)).thenReturn(Optional.empty());
 
         // When & Then=
-        assertThrows(NoSuchElementException.class, () -> memberService.getMyInfo(email));
-        verify(memberRepository, times(1)).findByInfoEmail(email);
+        assertThrows(NoSuchElementException.class, () -> memberService.getMyInfo(1L, email));
+        verify(memberRepository, times(1)).findByInfoEmailAndSeq(email, 1L);
     }
 }
